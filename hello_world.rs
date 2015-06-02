@@ -13,6 +13,9 @@ fn interp_binop(op: String, l: Box<ExprC>, r: Box<ExprC>) -> i32 {
    let right = interp(*r);
    match op.as_ref() {
       "+" => left + right,
+      "-" => left - right,
+      "*" => left * right,
+      "/" => left / right,
       _ => left - right
    }
 }
@@ -27,8 +30,16 @@ fn interp(e: ExprC) -> i32 {
 }
 
 fn main() {
-   println!("Hello World!");
-   //let test_num = ExprC::numC {n : 3};
-   let test_num = ExprC::binOpC {op : "+".to_string(), l : Box::new(ExprC::numC { n : 5 }), r : Box::new(ExprC::numC { n : 3}) };
-   println!("{}", interp(test_num));
+   let test_num1 = ExprC::binOpC {op : "+".to_string(), l : Box::new(ExprC::numC { n : 4 }), r : Box::new(ExprC::numC { n : 2}) };
+   let test_num2 = ExprC::binOpC {op : "-".to_string(), l : Box::new(ExprC::numC { n : 4 }), r : Box::new(ExprC::numC { n : 2}) };
+   let test_num3 = ExprC::binOpC {op : "*".to_string(), l : Box::new(ExprC::numC { n : 4 }), r : Box::new(ExprC::numC { n : 2}) };
+   let test_num4 = ExprC::binOpC {op : "/".to_string(), l : Box::new(ExprC::numC { n : 4 }), r : Box::new(ExprC::numC { n : 2}) };
+   println!("{} {} {} {}", interp(test_num1),
+                           interp(test_num2),
+                           interp(test_num3), 
+                           interp(test_num4));
+}
+
+fn test() {
+  assert!(true);
 }
