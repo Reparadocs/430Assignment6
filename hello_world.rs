@@ -11,7 +11,7 @@ enum ExprC {
    ifC { test : Box<ExprC>, then : Box<ExprC>, els : Box<ExprC> },
    appC { fun : Box<ExprC>, arg : Vec<ExprC> },
    binOpC { op : String, l : Box<ExprC>, r : Box<ExprC> },
-   lamC { args : Vec<ExprC>, body : Box<ExprC> }
+   lamC { args : Vec<String>, body : Box<ExprC> }
 }
 
 fn interp_binop(op: String, l: Box<ExprC>, r: Box<ExprC>) -> i32 {
@@ -38,7 +38,9 @@ fn interp(e: ExprC) -> Value {
    match e {
       ExprC::numC { n: n } => Value::numV {n : n},
       ExprC::boolC { b: b} => Value::boolV {b : b},
+      ExprC::lamC {args: args, body: body} => Value::closV {args : args, body : body},
       ExprC::binOpC { op: op, l: l, r: r } => Value::numV {n : interp_binop(op, l, r)},
+
       _ => panic!("Not implemented"),
    }
 }
