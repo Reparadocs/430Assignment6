@@ -17,11 +17,20 @@ enum ExprC {
 fn interp_binop(op: String, l: Box<ExprC>, r: Box<ExprC>) -> i32 {
    let left = interp(*l);
    let right = interp(*r);
-   match op.as_ref() {
-      "+" => left + right,
-      "-" => left - right,
-      "*" => left * right,
-      "/" => left / right,
+   match left {
+      Value::numV { n: l_n } =>
+         match right {
+            Value::numV { n: r_n} =>
+               match op.as_ref() {
+                  "+" => l_n + r_n,
+                  "-" => l_n - r_n,
+                  "*" => l_n * r_n,
+                  "/" => l_n / r_n,
+                  _ => panic!("Not binop"),
+               },
+            _ => panic!("Bad"),
+         },
+      _ => panic!("Bad"),
    }
 }
 
@@ -30,7 +39,7 @@ fn interp(e: ExprC) -> Value {
       ExprC::numC { n: n } => Value::numV {n : n},
       ExprC::boolC { b: b} => Value::boolV {b : b},
       ExprC::binOpC { op: op, l: l, r: r } => Value::numV {n : interp_binop(op, l, r)},
-      _ => 10
+      _ => panic!("Not implemented"),
    }
 }
 
@@ -46,7 +55,7 @@ fn serialize(v: Value) {
    match v {
       Value::numV { n: n } => println!("{}", n),
       Value::boolV { b: b } => serialize_bool(b),
-      Value::closV { args: args, body: body } => "#<procedure>",
+      Value::closV { args: args, body: body } => println!("#<procedure>"),
    }
 }
 
