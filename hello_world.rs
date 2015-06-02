@@ -1,3 +1,9 @@
+enum Value {
+   numV { n : i32 },
+   boolV { b : bool },
+   closV { args : Vec<String>, body : Box<ExprC> }   
+}
+
 enum ExprC {
    numC { n : i32 },
    boolC { b : bool },
@@ -13,16 +19,34 @@ fn interp_binop(op: String, l: Box<ExprC>, r: Box<ExprC>) -> i32 {
    let right = interp(*r);
    match op.as_ref() {
       "+" => left + right,
-      _ => left - right
+      "-" => left - right,
+      "*" => left * right,
+      "/" => left / right,
    }
 }
 
-fn interp(e: ExprC) -> i32 {
+fn interp(e: ExprC) -> Value {
    match e {
-      ExprC::numC { n: n } => n,
-      ExprC::boolC { b: b} => 5,
-      ExprC::binOpC { op: op, l: l, r: r } => interp_binop(op, l, r),
+      ExprC::numC { n: n } => Value::numV {n : n},
+      ExprC::boolC { b: b} => Value::boolV {b : b},
+      ExprC::binOpC { op: op, l: l, r: r } => Value::numV {n : interp_binop(op, l, r)},
       _ => 10
+   }
+}
+
+fn serialize_bool(b: bool) {
+   if b {
+      println!("True");
+   } else {
+      println!("False");
+   }
+}
+
+fn serialize(v: Value) {
+   match v {
+      Value::numV { n: n } => println!("{}", n),
+      Value::boolV { b: b } => serialize_bool(b),
+      Value::closV { args: args, body: body } => "#<procedure>",
    }
 }
 
@@ -30,5 +54,5 @@ fn main() {
    println!("Hello World!");
    //let test_num = ExprC::numC {n : 3};
    let test_num = ExprC::binOpC {op : "+".to_string(), l : Box::new(ExprC::numC { n : 5 }), r : Box::new(ExprC::numC { n : 3}) };
-   println!("{}", interp(test_num));
+   serialize(interp(test_num));
 }
