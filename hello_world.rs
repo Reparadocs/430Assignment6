@@ -14,26 +14,26 @@ struct idC {
    s: String
 }
 
-struct ifC {
-   test: ExprC,
-   then: ExprC,
-   els: ExprC
+struct ifC<'a> {
+   test: &'a (ExprC + 'a), 
+   then: &'a (ExprC + 'a),
+   els: &'a (ExprC + 'a)
 }
 
-struct appC {
-   fun: ExprC,
+struct appC<'a> {
+   fun: &'a (ExprC + 'a),
    arg: Vec<ExprC>
 }
 
-struct binOpC {
+struct binOpC<'a> {
    op: String,
-   l: ExprC,
-   r: ExprC
+   l: &'a (ExprC + 'a),
+   r: &'a (ExprC + 'a)
 }
 
-struct lamC {
+struct lamC<'a> {
    args: Vec<ExprC>,
-   body: ExprC
+   body: &'a (ExprC + 'a)
 }
 
 impl ExprC for numC {
@@ -42,12 +42,26 @@ impl ExprC for numC {
    }
 }
 
-fn get_num(e: &ExprC) {
+impl<'a> ExprC for binOpC {
+   fn interp(&self) -> i32 {
+      let left = self.l.interp();
+      let right = self.r.interp();
+
+      match self.op {
+         "+" => left + right,
+         "-" => left - right,
+         "*" => left * right,
+         "/" => left / right,
+      }
+   }
+}
+
+fn interp(e: &ExprC) {
    println!("Num: {}", e.interp());
 }
 
 fn main() {
    println!("Hello World!");
-   let test_num = numC { n : 1 };
-   get_num(&test_num);
+   let test_num = binOpC {op : "+", l : numC { n : 5 }, r : numC { n : 3} };
+   interp(&test_num);
 }
