@@ -14,6 +14,20 @@ enum ExprC {
    lamC { args : Vec<String>, body : Box<ExprC> }
 }
 
+fn interp_ifC(test: Box<ExprC>, this: Box<ExprC>, els: Box<ExprC>) -> Value {
+   let test_val = interp(*test);
+   let this_val = interp(*this);
+   let els_val = interp(*els);
+   match test_val {
+      Value::boolV {b: test_b} =>
+         match test_b {
+            false => this_val,
+            true => els_val,
+         },
+      _ => panic! ("Not a bool"),
+   }
+}
+
 fn interp_binop(op: String, l: Box<ExprC>, r: Box<ExprC>) -> Value {
    let left = interp(*l);
    let right = interp(*r);
