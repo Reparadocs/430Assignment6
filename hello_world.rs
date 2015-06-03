@@ -14,6 +14,27 @@ enum ExprC {
    lamC { args : Vec<String>, body : Box<ExprC> }
 }
 
+struct Binding {
+  name: String,
+  val: Value,
+}
+
+type Env = Vec<Binding>;
+
+fn interp_ifC(test: Box<ExprC>, this: Box<ExprC>, els: Box<ExprC>) -> Value {
+   let test_val = interp(*test);
+   let this_val = interp(*this);
+   let els_val = interp(*els);
+   match test_val {
+      Value::boolV {b: test_b} =>
+         match test_b {
+            false => this_val,
+            true => els_val,
+         },
+      _ => panic! ("Not a bool"),
+   }
+}
+
 fn interp_binop(op: String, l: Box<ExprC>, r: Box<ExprC>) -> Value {
    let left = interp(*l);
    let right = interp(*r);
@@ -57,11 +78,17 @@ fn interp_binop(op: String, l: Box<ExprC>, r: Box<ExprC>) -> Value {
    }
 }
 
+fn interp_app(fun: Box<ExprC>, arg: Vec<ExprC>) -> Value {
+
+  return Value::boolV{b: false};
+}
+
 fn interp(e: ExprC) -> Value {
    match e {
       ExprC::numC { n: n } => Value::numV {n : n},
       ExprC::boolC { b: b} => Value::boolV {b : b},
       ExprC::lamC {args: args, body: body} => Value::closV {args : args, body : body},
+      ExprC::appC {fun: fun, arg: arg} => interp_app(fun, arg),
       ExprC::binOpC { op: op, l: l, r: r } => interp_binop(op, l, r),
 
       _ => panic!("Not implemented"),
@@ -97,12 +124,10 @@ fn main() {
                            serialize(interp(test_num2)),
                            serialize(interp(test_num3)), 
                            serialize(interp(test_num4)));
+   test();
 }
 
 fn test() {
-  assert!(true);
-  println!("Hello World!");
-   
   //Primitive Tests
   assert_eq!(top_eval(ExprC::numC {n : 3}), "3");
   assert_eq!(top_eval(ExprC::boolC {b : false}), "False");
