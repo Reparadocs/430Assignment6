@@ -28,8 +28,8 @@ fn interp_ifC(test: Box<ExprC>, this: Box<ExprC>, els: Box<ExprC>) -> Value {
    match test_val {
       Value::boolV {b: test_b} =>
          match test_b {
-            false => this_val,
-            true => els_val,
+            false => els_val,
+            true => this_val,
          },
       _ => panic! ("Not a bool"),
    }
@@ -79,7 +79,7 @@ fn interp_binop(op: String, l: Box<ExprC>, r: Box<ExprC>) -> Value {
 }
 
 fn interp_app(fun: Box<ExprC>, arg: Vec<ExprC>) -> Value {
-
+  panic!("not implemented");
   return Value::boolV{b: false};
 }
 
@@ -90,6 +90,7 @@ fn interp(e: ExprC) -> Value {
       ExprC::lamC {args: args, body: body} => Value::closV {args : args, body : body},
       ExprC::appC {fun: fun, arg: arg} => interp_app(fun, arg),
       ExprC::binOpC { op: op, l: l, r: r } => interp_binop(op, l, r),
+      ExprC::ifC { test, then, els } => interp_ifC(test, then, els),
 
       _ => panic!("Not implemented"),
    }
@@ -116,14 +117,6 @@ fn top_eval(e : ExprC) -> String {
 }
 
 fn main() {
-   let test_num1 = ExprC::binOpC {op : "+".to_string(), l : Box::new(ExprC::numC { n : 4 }), r : Box::new(ExprC::numC { n : 2}) };
-   let test_num2 = ExprC::binOpC {op : "-".to_string(), l : Box::new(ExprC::numC { n : 4 }), r : Box::new(ExprC::numC { n : 2}) };
-   let test_num3 = ExprC::binOpC {op : "*".to_string(), l : Box::new(ExprC::numC { n : 4 }), r : Box::new(ExprC::numC { n : 2}) };
-   let test_num4 = ExprC::binOpC {op : "/".to_string(), l : Box::new(ExprC::numC { n : 4 }), r : Box::new(ExprC::numC { n : 2}) };
-   println!("{} {} {} {}", serialize(interp(test_num1)),
-                           serialize(interp(test_num2)),
-                           serialize(interp(test_num3)), 
-                           serialize(interp(test_num4)));
    test();
 }
 
@@ -146,4 +139,21 @@ fn test() {
   assert_eq!(top_eval(ExprC::binOpC {op : "*".to_string(), l : Box::new(ExprC::numC { n : 5}), r : Box::new(ExprC::numC {n : 3})}), "15");
   assert_eq!(top_eval(ExprC::binOpC {op : "-".to_string(), l : Box::new(ExprC::numC { n : 10}), r : Box::new(ExprC::numC {n : 6})}), "4");
   assert_eq!(top_eval(ExprC::binOpC {op : "+".to_string(), l : Box::new(ExprC::numC { n : 5}), r : Box::new(ExprC::numC {n : 3})}), "8");
+
+  // if tests
+  assert_eq!(top_eval(ExprC::ifC {test : Box::new(ExprC::boolC {b : false}), then : Box::new(ExprC::numC {n:5}), els : Box::new(ExprC::numC {n:3})}), "3");
+  assert_eq!(top_eval(ExprC::ifC {test : Box::new(ExprC::boolC {b : true}), then : Box::new(ExprC::numC {n:5}), els : Box::new(ExprC::numC {n:3})}), "5");
+  assert_eq!(top_eval(
+        ExprC::ifC {test : Box::new(ExprC::binOpC {op : "<=".to_string(), l : Box::new(ExprC::numC { n : 3}), r : Box::new(ExprC::numC {n : 6})}),
+                    then : Box::new(ExprC::numC {n:5}), 
+                    els : Box::new(ExprC::numC {n:3})}), "5");
+  assert_eq!(top_eval(
+        ExprC::ifC {test : Box::new(ExprC::binOpC {op : "<=".to_string(), l : Box::new(ExprC::numC { n : 3}), r : Box::new(ExprC::numC {n : 6})}),
+                    then : Box::new(ExprC::ifC {test : Box::new(ExprC::binOpC {op : "eq?".to_string(), 
+                                                                                l : Box::new(ExprC::numC { n : 3}), 
+                                                                                r : Box::new(ExprC::numC {n : 6})}),
+                                                then : Box::new(ExprC::boolC {b: false}),
+                                                 els : Box::new(ExprC::boolC {b:true})}),
+                    els : Box::new(ExprC::numC {n:3})}
+                    ), "True");
 }
